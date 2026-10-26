@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laboratory Sample Buffer - Producer Consumer Simulator</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header>
+  <div>
+    <h1>🧪 Laboratory Sample Buffer Simulator</h1>
+    <p>Producer–Consumer problem · bounded buffer (capacity 5) · semaphores + mutex</p>
+  </div>
+  <div class="clock"><span id="state" class="pill">STOPPED</span> <span id="time">0.0s</span></div>
+</header>
+
+<section class="card controls">
+  <div class="ctl"><label>Synchronization mode</label>
+    <select id="mode">
+      <option value="safe">✅ Safe – semaphores + mutex</option>
+      <option value="no_mutex">⚠ Race condition demo – no mutex</option>
+      <option value="no_semaphore">⚠ Overflow / Underflow demo – no semaphores</option>
+    </select></div>
+  <div class="ctl"><label>Producers (collectors): <b id="npv">1</b></label><input id="np" type="range" min="1" max="4" value="1"></div>
+  <div class="ctl"><label>Consumers (technicians): <b id="ncv">1</b></label><input id="nc" type="range" min="1" max="4" value="1"></div>
+  <div class="ctl"><label>Collect interval: <b id="pmv">700</b> ms</label><input id="pm" type="range" min="100" max="3000" step="50" value="700"></div>
+  <div class="ctl"><label>Processing time: <b id="cmv">1100</b> ms</label><input id="cm" type="range" min="100" max="4000" step="50" value="1100"></div>
+  <div class="ctl"><label>Sim speed: <b id="spv">1</b>×</label><input id="sp" type="range" min="0.5" max="4" step="0.5" value="1"></div>
+  <div class="btns">
+    <button id="bStart" class="primary">▶ Start</button>
+    <button id="bPause">⏸ Pause</button>
+    <button id="bReset">↺ Reset</button>
+  </div>
+  <div class="presets">
+    <span>Scenarios:</span>
+    <button data-p="full">Fast producer → Buffer Full</button>
+    <button data-p="empty">Slow producer → Buffer Empty</button>
+    <button data-p="race">Race condition</button>
+    <button data-p="overflow">Overflow / Underflow</button>
+    <button data-p="balanced">Balanced lab</button>
+  </div>
+</section>
+
+<section class="flow">
+  <div class="node producer">
+    <div class="ico">🧫</div><h3>Producer</h3><p>Collects laboratory samples</p>
+    <div id="prod" class="workers"></div>
+  </div>
+  <div class="arrow" id="arrIn">↓</div>
+  <div class="node buffer" id="bufBox">
+    <h3>Shared Buffer (Capacity = 5) <span id="used" class="used">0/5</span></h3>
+    <div class="slots" id="slots"></div>
+    <p class="muted">Temporary storage for collected samples · <span id="counterLine"></span></p>
+    <div class="meter"><i id="meterFill"></i></div>
+  </div>
+  <div class="arrow" id="arrOut">↓</div>
+  <div class="node consumer">
+    <div class="ico">🔬</div><h3>Consumer</h3><p>Takes samples for processing</p>
+    <div id="cons" class="workers"></div>
+  </div>
+</section>
+
+<h2>The three conditions</h2>
+<section class="conds">
+  <article class="card cond" id="c1">
+    <span class="tag">Condition 1</span><h3>Buffer Full</h3>
+    <p class="quote">If the buffer already contains five samples, a new sample cannot be inserted. The producer has to wait until the consumer removes a sample and creates free space.</p>
+    <div class="ex"><b>Example: Buffer is full</b><div class="mini" id="m1"></div>
+      <div class="status" id="s1">Producer is not blocked.</div></div>
+    <div class="count">Times producer waited: <b id="n1">0</b> · Overflow (no semaphore): <b id="o1">0</b></div>
+  </article>
+  <article class="card cond" id="c2">
+    <span class="tag">Condition 2</span><h3>Buffer Empty</h3>
+    <p class="quote">If there are no samples in the buffer, the consumer cannot take any sample for processing. It waits until the producer inserts a new sample.</p>
+    <div class="ex"><b>Example: Buffer is empty</b><div class="mini" id="m2"></div>
+      <div class="status" id="s2">Consumer is not blocked.</div></div>
+    <div class="count">Times consumer waited: <b id="n2">0</b> · Underflow (no semaphore): <b id="o2">0</b></div>
+  </article>
+  <article class="card cond" id="c3">
+    <span class="tag">Condition 3</span><h3>Race Condition</h3>
+    <p class="quote">A race condition occurs when two threads access and modify shared data at the same time. A mutex lock allows only one thread at a time to access the critical section.</p>
+    <div class="ex"><b>Mutex lock</b>
+      <div class="lock" id="lock">🔓 Free</div>
+      <div class="status" id="s3">Counter and buffer agree ✓</div></div>
+    <div class="count">Lock contention prevented: <b id="n3">0</b> · Lost samples: <b id="l3">0</b> · Corrupt reads: <b id="k3">0</b></div>
+  </article>
+</section>
+
+<section class="row2">
+  <div class="card"><h3>Totals</h3><div class="stats" id="stats"></div></div>
+  <div class="card"><h3>Buffer occupancy over time</h3><canvas id="chart" width="560" height="170"></canvas></div>
+</section>
+
+<section class="card"><h3>Event log <button id="bClear" class="mini-btn">clear view</button></h3><div id="log"></div></section>
+
+<footer>Run with VS Code → right-click <code>index.html</code> → <b>Open with Live Server</b> (or click <b>Go Live</b>).</footer>
+
+<script src="js/sync.js"></script>
+<script src="js/simulator.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
